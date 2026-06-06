@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Quest {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  description String
+  difficulty  Difficulty
+  category    String
+  status      QuestStatus @default(TODO)
+  isFeatured  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  submissions Submission[]
+  bookmarks   Bookmark[]
+}
+
+model Submission {
+  id        String   @id @default(cuid())
+  questId   String
+  name      String
+  githubUrl String
+  notes     String?
+  createdAt DateTime @default(now())
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  questId   String
+  createdAt DateTime @default(now())
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+}
+
+enum QuestStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
