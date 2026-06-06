@@ -1,8 +1,12 @@
 # DevQuest
 
+> **Live demo →** [https://dev-quest-one.vercel.app/](https://dev-quest-one.vercel.app/)
+
 A full-stack developer quest tracker built with Next.js .
 
 Browse developer challenges, submit your GitHub work, manage quests from a dashboard, bookmark quests for later, and track submissions — all in one small, readable codebase that demonstrates the core Next.js concepts from class.
+
+![DevQuest landing page](./public/devquest_landing.png)
 
 ---
 
@@ -23,14 +27,15 @@ The app intentionally stays small and focused. Every Next.js concept is used whe
 
 ## Tech Stack
 
-| Layer        | Choice                                   |
-| ------------ | ---------------------------------------- |
-| Framework    | Next.js 16.2.7 (App Router)              |
-| Language     | TypeScript                               |
-| Styling      | Tailwind CSS v4 (glassmorphism dark UI)  |
-| ORM          | Prisma 6                                 |
-| Database     | SQLite (via `prisma/dev.db`)             |
-| Runtime      | React 19, Node.js                        |
+| Layer        | Choice                                                |
+| ------------ | ----------------------------------------------------- |
+| Framework    | Next.js 16.2.7 (App Router)                           |
+| Language     | TypeScript                                            |
+| Styling      | Tailwind CSS v4 (glassmorphism dark UI)               |
+| ORM          | Prisma 6                                              |
+| Database     | PostgreSQL on [Neon](https://neon.tech) (serverless)  |
+| Hosting      | [Vercel](https://vercel.com)                          |
+| Runtime      | React 19, Node.js                                     |
 
 ---
 
