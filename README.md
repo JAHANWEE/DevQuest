@@ -1,156 +1,171 @@
 # DevQuest
 
-A small, calm full-stack **Next.js** developer quest tracker built for the
-**Web Dev Cohort 2026 Full Stack Next.js** assignment.
+A full-stack developer quest tracker built with Next.js .
 
-DevQuest is a developer quest board + learning tracker + soft glass dashboard.
-You can browse public quests, view quest details, submit GitHub work, create
-new quests from the dashboard, update progress, delete quests, view
-submissions, and bookmark quests.
-
-The whole project is small, complete, and easy to explain end to end.
+Browse developer challenges, submit your GitHub work, manage quests from a dashboard, bookmark quests for later, and track submissions — all in one small, readable codebase that demonstrates the core Next.js concepts from class.
 
 ---
 
 ## Project Overview
 
-DevQuest demonstrates the **Next.js App Router** with multiple rendering
-strategies, a real database, structured API responses, and a clean
-Server Action vs API Route split.
+DevQuest is a quest board for developers. You can:
 
-It is intentionally:
+- Browse a public list of developer challenges (quests)
+- View quest details and submit your GitHub work
+- Create, edit, and delete quests from a protected dashboard
+- Update quest status inline (TODO → IN PROGRESS → COMPLETED)
+- Bookmark quests you want to revisit
+- View all submissions across all quests
 
-- minimal
-- calm
-- glassy
-- developer-focused
-- not a productivity war room
-- not a Jira-style issue tracker
-- not a fake SaaS landing page
+The app intentionally stays small and focused. Every Next.js concept is used where it actually makes sense, not just for the sake of it.
 
 ---
 
 ## Tech Stack
 
-- Next.js (App Router)
-- TypeScript
-- Tailwind CSS (glassmorphism)
-- Prisma ORM with SQLite
-- Server Components by default
-- Client Components only where required (forms, pending state, bookmark toggle)
-- Server Actions for form mutations
-- API Route Handlers for external CRUD
+| Layer        | Choice                                   |
+| ------------ | ---------------------------------------- |
+| Framework    | Next.js 16.2.7 (App Router)              |
+| Language     | TypeScript                               |
+| Styling      | Tailwind CSS v4 (glassmorphism dark UI)  |
+| ORM          | Prisma 6                                 |
+| Database     | SQLite (via `prisma/dev.db`)             |
+| Runtime      | React 19, Node.js                        |
 
 ---
 
 ## Features Implemented
 
-- Public quest board with featured quests
-- Quest detail page with submission form
-- Quest create, edit, status update, and delete from the dashboard
-- Submissions list with GitHub links
-- Bookmark toggle on quest detail
-- Structured API responses with consistent shape
-- Validation for forms and API requests
-- Friendly empty states
-- Reusable glass components
+- Public quest board with featured quests on the home page
+- Quest detail page with a GitHub submission form
+- Bookmark toggle (add / remove) on quest detail pages
+- Dashboard overview with live stats (quests, submissions, bookmarks)
+- Manage quests: create, edit, delete, change status inline
+- Submission log with timestamps and linked quest titles
+- Shared validation helpers used by both API Routes and Server Actions
+- Structured API responses (`success`, `message`, `data`, `error`) across all routes
+- `notFound()` for missing records, duplicate-slug handling, meaningful error messages
 
 ---
 
 ## How to Run Locally
 
 ```bash
+# 1. Clone the repository
+git clone <your-repo-url>
+cd devquest
+
+# 2. Install dependencies
 npm install
+
+# 3. Create your local environment file
 cp .env.example .env
+
+# 4. Generate the Prisma client
 npx prisma generate
+
+# 5. Push the schema to the local SQLite database
 npm run db:push
+
+# 6. Seed demo data (8 quests + sample submission + bookmark)
 npm run db:seed
+
+# 7. Start the development server
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open [http://localhost:3000](http://localhost:3000).
+
+---
+
+## npm Scripts
+
+| Script              | What it does                                        |
+| ------------------- | --------------------------------------------------- |
+| `npm run dev`       | Start the Next.js development server                |
+| `npm run build`     | Production build                                    |
+| `npm run start`     | Start the production server                         |
+| `npm run lint`      | Run ESLint                                          |
+| `npm run db:push`   | Push the Prisma schema to the local SQLite database |
+| `npm run db:seed`   | Reset and reseed demo data via `prisma/seed.ts`     |
+| `npm run db:studio` | Open Prisma Studio to browse data visually          |
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file based on `.env.example`.
+Create a `.env` file based on `.env.example`:
 
 ```env
 DATABASE_URL="file:./dev.db"
 ```
 
-The local SQLite database is stored at `prisma/dev.db`.
+The SQLite database file lives at `prisma/dev.db` and is created automatically after running `db:push`.
 
 ---
 
 ## Database Setup
 
-The Prisma schema lives in `prisma/schema.prisma` and defines three models:
+Schema lives in `prisma/schema.prisma`. Three models:
 
-- `Quest`
-- `Submission`
-- `Bookmark`
+| Model        | Fields                                                                 |
+| ------------ | ---------------------------------------------------------------------- |
+| `Quest`      | id, title, slug (unique), description, difficulty, category, status, isFeatured, createdAt, updatedAt |
+| `Submission` | id, questId (FK), name, githubUrl, notes, createdAt                    |
+| `Bookmark`   | id, questId (FK), createdAt                                            |
 
-Plus two enums: `QuestStatus` and `Difficulty`.
+Enums: `QuestStatus` (`TODO` | `IN_PROGRESS` | `COMPLETED`), `Difficulty` (`BEGINNER` | `INTERMEDIATE` | `ADVANCED`).
 
-Seed data is loaded by `prisma/seed.ts`. It clears existing data safely and
-inserts 8 realistic quests plus a sample submission and bookmark.
-
-Useful scripts:
-
-```bash
-npm run db:push     # sync the schema with the local SQLite database
-npm run db:seed     # reset and reseed demo data
-npm run db:studio   # open Prisma Studio
-```
+The seed file (`prisma/seed.ts`) safely clears existing data and inserts 8 realistic quests, one sample submission, and one bookmark.
 
 ---
 
 ## Routes and Pages
 
-| Path                                  | Purpose                                  | Rendering |
-| ------------------------------------- | ---------------------------------------- | --------- |
-| `/`                                   | Home with hero and featured quests       | ISR (60s) |
-| `/quests`                             | Public quest board                       | ISR (60s) |
-| `/quests/[slug]`                      | Quest detail with submission form        | ISR (60s) |
-| `/about`                              | Project documentation                    | SSG       |
-| `/dashboard`                          | Quest Log overview                       | SSR       |
-| `/dashboard/quests`                   | Manage quests                            | SSR       |
-| `/dashboard/quests/new`               | Create a new quest                       | SSR       |
-| `/dashboard/quests/[id]/edit`         | Edit an existing quest                   | SSR       |
-| `/dashboard/submissions`              | All submissions                          | SSR       |
+File-based routing under `app/`. Rendering mode is set via `export const dynamic` or `export const revalidate` in each page file.
 
-All routes are nested inside the `app/` directory using file-based routing.
+| Path                              | Purpose                          | Rendering               |
+| --------------------------------- | -------------------------------- | ----------------------- |
+| `/`                               | Home — hero + featured quests    | ISR (`revalidate = 60`) |
+| `/quests`                         | Public quest board               | ISR (`revalidate = 60`) |
+| `/quests/[slug]`                  | Quest detail + submission form   | ISR + `generateStaticParams` |
+| `/about`                          | Project documentation            | SSG (`force-static`)    |
+| `/dashboard`                      | Quest Log overview with stats    | SSR (`force-dynamic`)   |
+| `/dashboard/quests`               | Manage all quests                | SSR (`force-dynamic`)   |
+| `/dashboard/quests/new`           | Create a new quest               | SSR + Server Action     |
+| `/dashboard/quests/[id]/edit`     | Edit an existing quest           | SSR (`force-dynamic`)   |
+| `/dashboard/submissions`          | All submissions                  | SSR (`force-dynamic`)   |
 
 ---
 
 ## API Routes
 
-| Method     | Path                     | Description                       |
-| ---------- | ------------------------ | --------------------------------- |
-| `GET`      | `/api/quests`            | List all quests                   |
-| `POST`     | `/api/quests`            | Create a quest                    |
-| `GET`      | `/api/quests/[id]`       | Get a quest by id                 |
-| `PATCH`    | `/api/quests/[id]`       | Update a quest by id              |
-| `DELETE`   | `/api/quests/[id]`       | Delete a quest by id              |
-| `GET`      | `/api/submissions`       | List all submissions              |
-| `POST`     | `/api/submissions`       | Create a submission               |
-| `GET`      | `/api/bookmarks`         | List all bookmarks                |
-| `POST`     | `/api/bookmarks`         | Create a bookmark                 |
-| `DELETE`   | `/api/bookmarks`         | Remove a bookmark by quest or id  |
+All under `app/api/**/route.ts`. Every response uses the same structured shape and correct HTTP status codes (`200`, `201`, `400`, `404`, `409`, `500`).
 
-All responses use the same shape:
+| Method   | Path                  | Description                            |
+| -------- | --------------------- | -------------------------------------- |
+| `GET`    | `/api/quests`         | List all quests (with submission count)|
+| `POST`   | `/api/quests`         | Create a quest                         |
+| `GET`    | `/api/quests/[id]`    | Get a single quest by id               |
+| `PATCH`  | `/api/quests/[id]`    | Update a quest by id                   |
+| `DELETE` | `/api/quests/[id]`    | Delete a quest by id                   |
+| `GET`    | `/api/submissions`    | List all submissions                   |
+| `POST`   | `/api/submissions`    | Create a submission                    |
+| `GET`    | `/api/bookmarks`      | List all bookmarks                     |
+| `POST`   | `/api/bookmarks`      | Add a bookmark                         |
+| `DELETE` | `/api/bookmarks`      | Remove a bookmark by `questId`         |
+
+**Success response shape:**
 
 ```json
 {
   "success": true,
   "message": "Quest fetched successfully",
-  "data": { }
+  "data": {}
 }
 ```
 
-Errors look like:
+**Error response shape:**
 
 ```json
 {
@@ -164,170 +179,183 @@ Errors look like:
 
 ## Server Actions
 
-Defined in `app/actions/quest-actions.ts` with the `"use server"` directive:
+Defined in `app/actions/quest-actions.ts` with `"use server"` at the top. They accept `FormData` from Next.js forms, validate input, write to the database, and call `revalidatePath` / `redirect` to keep the UI in sync.
 
-- `createQuestAction`
-- `updateQuestAction`
-- `updateQuestStatusAction`
-- `deleteQuestAction`
-- `createSubmissionAction`
-- `bookmarkQuestAction`
-- `deleteBookmarkAction`
+| Action                    | Where it's used                                      |
+| ------------------------- | ---------------------------------------------------- |
+| `createQuestAction`       | Create quest form (`/dashboard/quests/new`)          |
+| `updateQuestAction`       | Edit quest form (`/dashboard/quests/[id]/edit`)      |
+| `updateQuestStatusAction` | Inline status dropdown on the manage quests page     |
+| `deleteQuestAction`       | Delete button on the manage quests page              |
+| `createSubmissionAction`  | Submission form on the public quest detail page      |
+| `bookmarkQuestAction`     | Bookmark button on the quest detail page             |
+| `deleteBookmarkAction`    | Unbookmark button on the quest detail page           |
 
-Each form mutation in the UI is bound to one of these actions.
+Each action returns a typed `ActionState`:
+
+```ts
+type ActionState = {
+  ok: boolean;
+  message: string;
+  fieldErrors?: Record<string, string>;
+};
+```
+
+Client components use `useActionState` to surface field errors and a pending state, and `useFormStatus` inside `<SubmitButton />` to disable the button while a submission is in flight.
 
 ---
 
 ## Rendering Strategies
 
-### SSR
+### SSG — Static Site Generation
 
-Used in dashboard pages because dashboard data should always be fresh at
-request time.
+**Where:** `/about`
 
-Pages:
+**Why:** The about page is static documentation. It has no database data and never changes at runtime. `export const dynamic = "force-static"` tells Next.js to render it once at build time.
 
-- `/dashboard`
-- `/dashboard/quests`
-- `/dashboard/quests/new`
-- `/dashboard/quests/[id]/edit`
-- `/dashboard/submissions`
+### ISR — Incremental Static Regeneration
 
-These pages use `export const dynamic = "force-dynamic"`.
+**Where:** `/` (home), `/quests` (quest board), `/quests/[slug]` (quest detail)
 
-### SSG
+**Why:** Public pages benefit from caching — they don't need to hit the database on every request. `export const revalidate = 60` regenerates the cached page in the background every 60 seconds. The quest detail page also uses `generateStaticParams()` to pre-build known slugs at build time while still serving new slugs on demand.
 
-Used in `/about` because this page contains static project information and
-does not need database data.
+### SSR — Server-Side Rendering
 
-This page uses `export const dynamic = "force-static"`.
+**Where:** All dashboard pages (`/dashboard`, `/dashboard/quests`, `/dashboard/quests/[id]/edit`, `/dashboard/submissions`)
 
-### ISR
-
-Used in `/quests` and `/quests/[slug]` because public quest pages can be
-cached and regenerated every 60 seconds.
-
-These pages use `export const revalidate = 60`. The quest detail page also
-uses `generateStaticParams()` to pre-generate known slugs at build time.
-
----
-
-## Concepts Covered from Class
-
-- App Router and file-based routing
-- Layouts (root layout, dashboard layout)
-- Server Components and Client Components
-- API Route Handlers (GET, POST, PATCH, DELETE)
-- Server Actions with `"use server"`
-- `revalidatePath` and `redirect` from `next/cache` and `next/navigation`
-- Structured API responses
-- Prisma ORM with SQLite
-- Validation in both Server Actions and API Routes
-- Tailwind glassmorphism styling
-- SSG, SSR, and ISR clearly separated by page
+**Why:** The dashboard must always show the latest data. Caching a manager view would show stale quest statuses, submission counts, and bookmarks. `export const dynamic = "force-dynamic"` forces a fresh database read on every request.
 
 ---
 
 ## API Routes vs Server Actions
 
-This project uses both API Routes and Server Actions.
+Both are used in this project, and they serve different purposes.
 
-**API Routes** are used for external/programmatic CRUD operations. For
-example, `/api/quests` exposes `GET` and `POST` methods that can be called
-by external clients or testing tools. They return structured JSON
-responses and are ideal for any client outside the Next.js UI.
+**API Routes** (`app/api/**/route.ts`) handle external or programmatic CRUD. They accept HTTP requests from any client (browser fetch, Postman, a mobile app) and return structured JSON. They are the right choice when data needs to be accessible outside the Next.js UI.
 
-**Server Actions** are used for form submissions inside the Next.js app.
-For example, creating a quest from the dashboard uses a Server Action
-because the mutation is directly connected to a form in the UI. They use
-the `"use server"` directive and call `revalidatePath` and `redirect` to
-keep the UI fresh.
+**Server Actions** (`app/actions/quest-actions.ts`) handle form mutations inside the UI. They are called directly by `<form action={...}>` elements in React. Because they run on the server, they can access the database directly and call `revalidatePath` and `redirect` — no `fetch` call or JSON parsing needed on the client.
 
-This keeps API access and UI form mutations clearly separated.
+The same validation helpers in `lib/validations.ts` are shared by both, keeping the logic DRY.
 
 ---
 
-## Folder Structure
+## Project Structure
 
 ```
 app/
-  layout.tsx
-  page.tsx
+  layout.tsx                          # Root layout + global metadata
+  page.tsx                            # Home page (ISR)
   globals.css
-  about/page.tsx
-  quests/page.tsx
-  quests/[slug]/page.tsx
-  quests/[slug]/submission-form.tsx
-  quests/[slug]/bookmark-controls.tsx
-  dashboard/layout.tsx
-  dashboard/page.tsx
-  dashboard/quests/page.tsx
-  dashboard/quests/quest-row-actions.tsx
-  dashboard/quests/new/page.tsx
-  dashboard/quests/[id]/edit/page.tsx
-  dashboard/submissions/page.tsx
-  actions/quest-actions.ts
-  api/quests/route.ts
-  api/quests/[id]/route.ts
-  api/submissions/route.ts
-  api/bookmarks/route.ts
+
+  about/
+    page.tsx                          # About page (SSG)
+
+  quests/
+    page.tsx                          # Public quest board (ISR)
+    [slug]/
+      page.tsx                        # Quest detail (ISR + generateStaticParams)
+      submission-form.tsx             # Client form — useActionState
+      bookmark-controls.tsx           # Client bookmark toggle
+
+  dashboard/
+    layout.tsx                        # Dashboard shell + sidebar
+    page.tsx                          # Overview stats (SSR)
+    quests/
+      page.tsx                        # Manage quests table (SSR)
+      quest-row-actions.tsx           # Client: status dropdown + edit + delete
+      new/page.tsx                    # Create quest page
+      [id]/edit/page.tsx              # Edit quest page (SSR)
+    submissions/
+      page.tsx                        # All submissions (SSR)
+
+  actions/
+    quest-actions.ts                  # "use server" — all Server Actions
+
+  api/
+    quests/route.ts                   # GET, POST
+    quests/[id]/route.ts              # GET, PATCH, DELETE
+    submissions/route.ts              # GET, POST
+    bookmarks/route.ts                # GET, POST, DELETE
 
 components/
-  site-header.tsx
-  site-footer.tsx
-  dashboard-sidebar.tsx
-  glass-card.tsx
-  page-shell.tsx
-  section-heading.tsx
-  quest-card.tsx
-  quest-form.tsx
-  status-badge.tsx
-  difficulty-badge.tsx
-  stat-card.tsx
-  empty-state.tsx
-  submit-button.tsx
-  form-field.tsx
-  textarea-field.tsx
+  glass-card.tsx                      # Reusable glass surface
+  page-shell.tsx                      # Centered max-width container
+  section-heading.tsx                 # Page title + subtitle + optional actions
+  site-header.tsx                     # Public navigation + footer shell
+  site-footer.tsx                     # Public footer
+  dashboard-sidebar.tsx               # Dashboard sidebar (Client Component)
+  quest-card.tsx                      # Quest card used on home + board
+  quest-form.tsx                      # Create/edit form (Client Component)
+  status-badge.tsx                    # TODO / IN_PROGRESS / COMPLETED pill
+  difficulty-badge.tsx                # BEGINNER / INTERMEDIATE / ADVANCED pill
+  stat-card.tsx                       # Dashboard stat tiles
+  empty-state.tsx                     # Reusable empty state with optional CTA
+  submit-button.tsx                   # useFormStatus submit button
+  form-field.tsx                      # Labeled text input
+  textarea-field.tsx                  # Labeled textarea
 
 lib/
-  prisma.ts
-  slugify.ts
-  api-response.ts
-  validations.ts
-  format-date.ts
+  prisma.ts                           # Prisma client singleton
+  slugify.ts                          # title → URL slug
+  api-response.ts                     # successResponse / errorResponse helpers
+  validations.ts                      # Shared validators (required, isValidUrl, enums)
+  format-date.ts                      # Date formatters
 
 prisma/
-  schema.prisma
-  seed.ts
-  dev.db
+  schema.prisma                       # Quest, Submission, Bookmark models
+  seed.ts                             # Resets and seeds demo data
+  dev.db                              # Local SQLite database (git-ignored)
+
+.env.example                          # Environment variable template
 ```
+
+---
+
+## Concepts Covered from Class
+
+| Concept                          | Where in this project                                         |
+| -------------------------------- | ------------------------------------------------------------- |
+| Next.js App Router setup         | `app/` directory, `next.config.ts`                           |
+| File-based routing               | Every file under `app/` is a route                           |
+| Layouts (root + nested)          | `app/layout.tsx` and `app/dashboard/layout.tsx`              |
+| Multiple pages and routes        | 9 pages, 10 API endpoints                                    |
+| SSR                              | All dashboard pages (`force-dynamic`)                        |
+| SSG                              | `/about` (`force-static`)                                    |
+| ISR                              | `/`, `/quests`, `/quests/[slug]` (`revalidate = 60`)         |
+| `generateStaticParams`           | Pre-builds known quest slugs at build time                   |
+| API Route Handlers               | `app/api/**/route.ts`                                        |
+| GET, POST, PATCH, DELETE         | Fully covered across the quest, submission, bookmark routes  |
+| Database connection              | Prisma singleton in `lib/prisma.ts`                          |
+| Structured API responses         | `lib/api-response.ts` used across all route handlers         |
+| Proper error handling            | Validation errors, 404s, 409 conflicts, 500 fallbacks        |
+| Server Actions (`"use server"`)  | `app/actions/quest-actions.ts`                               |
+| `useActionState`                 | `submission-form.tsx`, `bookmark-controls.tsx`, `quest-form.tsx` |
+| `useFormStatus`                  | `components/submit-button.tsx`                               |
+| `revalidatePath` + `redirect`    | After every mutation in Server Actions                       |
+| `notFound()`                     | Quest detail and edit pages when a record is missing         |
+| Server vs Client Components      | Server by default; Client only where state or browser APIs are needed |
 
 ---
 
 ## Assumptions and Limitations
 
-- No authentication. The dashboard is not protected.
-- No payments, no SaaS pricing, no testimonials.
-- Submissions are stored as plain text and not moderated.
-- The bookmark feature is single-user; there is no per-user isolation.
-- The project is meant for learning and assignment evaluation, not for
-  production traffic.
+- No authentication. The dashboard is open and unprotected.
+- The bookmark feature has no per-user isolation — bookmarks are global.
+- Submissions are plain text and are not moderated.
+- The project uses SQLite for simplicity. Swap `provider` in `prisma/schema.prisma` to `postgresql` for a production deployment.
+- The project is built for assignment evaluation and learning, not production traffic.
 
 ---
 
-## Why this project satisfies the assignment
+## Why This Project Satisfies the Assignment
 
-- Uses the Next.js App Router with file-based routing and nested layouts
-- Implements SSR, SSG, and ISR on different pages, each with a clear
-  reason
-- Implements all of `GET`, `POST`, `PATCH/PUT`, and `DELETE` across the API
-  routes
-- Connects to a real SQLite database with Prisma
-- Uses structured `{ success, message, data, error }` responses everywhere
-- Handles validation and errors meaningfully in both API Routes and
-  Server Actions
-- Uses Server Actions with `"use server"` for UI form mutations
-- Explains the difference between API Routes and Server Actions in code
-  comments and this README
-- Has a clean, minimal, calm glassmorphism frontend
-- Includes `.env.example` and a complete README
+- Uses **Next.js App Router** with file-based routing and two nested layouts
+- Implements **SSR**, **SSG**, and **ISR** on different pages, each with a clear and documented reason
+- Covers **GET**, **POST**, **PATCH**, and **DELETE** across the API routes
+- Connects to a **real SQLite database via Prisma** with full CRUD operations
+- Returns **structured `{ success, message, data, error }` responses** from every API route
+- Handles errors meaningfully: field-level validation, duplicate slug detection, `notFound()`, and 500 fallbacks
+- Uses **Server Actions** with `"use server"` for all UI form mutations
+- Clearly separates **API Routes** (external CRUD) from **Server Actions** (UI form mutations) — both coexist and share validation logic
+- Code is organized, readable, and avoids repeated logic through shared helpers and components
+- Includes `.env.example`, a complete README, and working seed data
